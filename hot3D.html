@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>3D热力图</title>
+    <style>
+      html, body, #container {
+        width: 100%;
+        height: 100%;
+        margin:0;
+      }
+      div,ul,li{
+          margin: 0;
+          padding: 0;
+      }
+      /* #container {
+        height: 400px;
+        width: 400px;
+        border:2px solid rgb(229,181,182);
+        margin: 50px 50px 0;
+      } */
+      #city {
+        color: rgb(158,158,158);
+        font-size: 27px;
+        position: absolute;
+        left: 61px;
+        top: 57px;
+      }
+      ul,li {
+        list-style: none;
+      }
+        .legend {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+        }
+
+        .legend ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .color-item {
+            width: 40px;
+            height: 10px;
+            display: inline-block;
+        }
+
+        .label-item {
+            display: inline-block;
+            width: 40px;
+            margin-left: -2px;
+            font-size: 14px;
+        }
+      #msgMarker {
+        position: absolute;
+        border: 1px solid #cdcdcd;
+        background: #fff;
+        top: 0;
+        border-radius: 8px;
+      }
+    </style>
+</head>
+<body>
+<div id="container" class="container"></div>
+<div id="city"></div>
+<div class="legend">
+    <ul class="colors" id="legend-color"></ul>
+    <ul class="labels" id="legend-label"></ul>
+</div>
+<div id="msgMarker"></div>
+<script src="https://webapi.amap.com/loca?v=1.2.1&key=becb1346c6f163e630a753743cc98aba"></script>
+<script src="https://a.amap.com/Loca/static/dist/jquery.min.js"></script>
+<script>
+    let cityName = location.href.split('=')[1]
+    let cities = {
+        bj: {
+            center: [116.407394, 39.904211],
+            name: '北京',
+        },
+        sh: {
+            center: [121.473662, 31.230372],
+            name: '上海'
+        },
+        sz: {
+            center: [114.085947,22.547],
+            name: '深圳'
+        }
+    }
+    // var city = {
+    //     center: [116.407394, 39.904211],
+    //     name: '北京'
+    // }
+    var city = cities[cityName]
+
+    $('#city').text(city.name)
+    var color = [
+        'rgb(112,78,229)',
+        'rgb(86,163,233)',
+        'rgb(70,229,235)',
+        'rgb(108,235,104)',
+        'rgb(245,241,72)',
+        'rgb(241,193,72)',
+        'rgb(243,74,70)'
+    ]
+
+    $.get(`./${cityName}/count_location_${cityName}.json`, function (heatmapData) {
+        var map = Loca.create('container', {
+            mapStyle: 'amap://styles/dce33b01f4a1fc79a1994f81dc145941',
+            pitch: 50,
+            zoom: 9,
+            // viewMode: '2D',  //设置地图模式
+            center: city.center,
+            zooms: [4, 12]
+        });
+
+        var layer = Loca.visualLayer({
+            eventSupport: true,
+            container: map,
+            type: 'heatmap',
+            shape: 'rectangle'
+        });
+        // console.log(heatmapData)
+        layer.setData(heatmapData, {
+            lnglat: 'lnglat',
+            value: 'comment'
+        });
+
+        layer.setOptions({
+            // unit: 'meter',
+            style: {
+                color,
+                radius: 5,
+                opacity: 1
+            }
+        });
+        layer.on('click', function (ev) {
+            updateInfo(ev);
+        });
+
+        function updateInfo(ev) {
+            // console.log(ev)
+            $('#msgMarker').text((() => {
+                let str = ''
+                let list = ev.rawData
+                let obj = {}
+                list.map(x => {
+                    if (!obj[x.name]) {
+                       obj[x.name] = x.comment
+                       if (str) { str +=', '}
+                       str += `${x.name}: ${Math.floor(x.comment)}`
+                    }
+                })
+                return str
+            })()).css({"padding": "2px 5px","top": ev.originalEvent.offsetY + 5,"left":ev.originalEvent.offsetX + 5})
+        }
+
+        // 事件 legendupdate: 图例数据更新完成回调此函数
+        layer.on('legendupdate', function (ev) {
+            // console.log("ev ", ev);
+            var colorLegend = ev.colorLegend;
+            initLegend(colorLegend);
+        });
+
+        layer.render();
+    });
+
+    function initLegend(colorLegend) {
+        var legends = colorLegend.map(item => {
+            // color 为 gradient 传入的格式
+            return `<li class="color-item" style="background-color: ${item.color}"></li>`
+        });
+
+        var ranges = colorLegend.map((item, index) => {
+            // range 可能为小数，可以自行取整计算
+            item.range[0] = Math.round(item.range[0]);
+            item.range[1] = Math.round(item.range[1]);
+
+            if (index == colorLegend.length - 1) {
+                return `<li class="label-item">${item.range[0]}</li><li class="label-item">${item.range[1]}</li>`;
+            }
+            return `<li class="label-item">${item.range[0]}</li>`;
+        });
+
+        document.getElementById('legend-color').innerHTML = legends.join('');
+        document.getElementById('legend-label').innerHTML = ranges.join('');
+    }
+</script>
+</body>
+</html>

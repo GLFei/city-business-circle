@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>正四边形热力图（按米分箱）</title>
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="container" class="container"></div>
+<!--<script src="./script/loca.js"></script>-->
+<script src="https://webapi.amap.com/loca?v=1.2.1&key=becb1346c6f163e630a753743cc98aba"></script>
+<script src="https://a.amap.com/Loca/static/dist/jquery.min.js"></script>
+<script src="./beijing.js"></script>
+<script>
+
+    var map = Loca.create('container', {
+        mapStyle: 'amap://styles/twilight',
+        pitch: 50,
+        zoom: 9,
+        center: [116.418885, 39.897960],
+        zooms: [4, 12]
+    });
+
+    // $.get('./data.json', function (heatmapData) {
+        var layer = Loca.visualLayer({
+            container: map,
+            type: 'heatmap',
+            shape: 'rectangle'
+        });
+
+        let hotList = []
+        dataList.map((i) => {
+            hotList.push({
+                center: [i['lnglat'][0], i['lnglat'][1]],
+                count: i['comment']
+            })
+            // valueList.push(i['comment'])
+        })
+console.log(hotList)
+        layer.setData(hotList, {
+            lnglat: function (obj) {
+                var val = obj.value;
+                return val.center
+                // return val.lnglat
+            },
+            value: 'count',
+            // type: 'tsv'
+        });
+
+        layer.setOptions({
+            // unit: 'meter',
+            style: {
+                color: ['#ecda9a', '#efc47e', '#f3ad6a', '#f7945d', '#f97b57', '#f66356', '#ee4d5a'],
+                radius: 10,
+                opacity: 0.9,
+                gap: 0.150,
+                height: [0, 500000]
+            }
+        });
+
+        layer.render();
+    // });
+
+</script>
+</body>
+</html>

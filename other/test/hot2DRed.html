@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>2D热力图</title>
+    <style>
+      html, body, #container {
+        width: 100%;
+        height: 100%;
+        margin:0;
+      }
+      div,ul,li{
+          margin: 0;
+          padding: 0;
+      }
+      /* #container {
+        height: 400px;
+        width: 400px;
+        border:2px solid rgb(229,181,182);
+        margin: 50px 50px 0;
+      } */
+      #city {
+        color: rgb(158,158,158);
+        font-size: 27px;
+        position: absolute;
+        left: 61px;
+        top: 57px;
+      }
+      ul,li {
+        list-style: none;
+      }
+      #marker {
+        position: absolute;
+        bottom: 50px;
+        left: 61px;
+      }
+      #marker ul {
+        display: flex;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      #marker ul li {
+        width: 30px;
+        height: 10px;
+      }
+      #msgMarker {
+        position: absolute;
+        border: 1px solid #cdcdcd;
+        background: #fff;
+        top: 0;
+      }
+    </style>
+</head>
+<body>
+<div id="container" class="container"></div>
+<div id="city"></div>
+<div id="marker"></div>
+<div id="msgMarker"></div>
+<script src="https://webapi.amap.com/loca?v=1.2.1&key=becb1346c6f163e630a753743cc98aba"></script>
+<script src="https://a.amap.com/Loca/static/dist/jquery.min.js"></script>
+<script>
+    var city = {
+        center: [116.407394, 39.904211],
+        name: '北京'
+    }
+    $('#city').text(city.name)
+
+    var color = [
+        // 蓝黑款
+        // 'rgb(212,228,251)',
+        // 'rgb(177,198,233)',
+        // 'rgb(156,180,219)',
+        // 'rgb(124,150,195)',
+        // 'rgb(96,122,171)',
+        // 'rgb(54,81,135)',
+        // 'rgb(12,38,95)'
+        'rgb(250,224,185)',
+        'rgb(246,198,160)',
+        'rgb(240,168,135)',
+        'rgb(235,140,112)',
+        'rgb(229,110,87)',
+        'rgb(223,74,60)',
+        'rgb(214,20,20)',
+    ]
+    let lis =''
+    color.map(i => {
+        lis +=`<li style="background:${i};"></li>`
+    })
+    $('#marker').html(`<ul>${lis}</ul>`)
+
+    $.get('./hot.json', function (heatmapData) {
+        var map = Loca.create('container', {
+            mapStyle: 'amap://styles/dce33b01f4a1fc79a1994f81dc145941',
+            // pitch: 50,
+            zoom: 9,
+            viewMode: '2D',  //设置地图模式
+            center: city.center,
+            // zooms: [4, 12]
+        });
+
+        var layer = Loca.visualLayer({
+            eventSupport: true,
+            container: map,
+            type: 'heatmap',
+            shape: 'rectangle'
+        });
+
+        layer.setData(heatmapData, {
+            lnglat: 'lnglat',
+            value: 'comment'
+        });
+
+
+
+        layer.setOptions({
+            // unit: 'meter',
+            style: {
+                color,
+                radius: 5,
+                opacity: 1
+            }
+        });
+
+        layer.on('click', function (ev) {
+            updateInfo(ev);
+        });
+
+        function updateInfo(ev) {
+            $('#msgMarker').text((() => {
+                let arr = []
+                ev.rawData.map(x => {
+                    if ((arr).indexOf(x.name) === -1) {
+                        arr.push(x.name)
+                    }
+                })
+                return arr
+            })()).css({"padding": "2px 5px","top": ev.originalEvent.offsetY + 5,"left":ev.originalEvent.offsetX + 5})
+        }
+        layer.render();
+
+    })
+</script>
+</body>
+</html>
