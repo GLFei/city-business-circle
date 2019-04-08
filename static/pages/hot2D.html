@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>3D热力图</title>
+    <link rel="stylesheet" type="text/css" href="./../css/common.css" />
+    <title>2D热力图</title>
     <style>
       html, body, #container {
         width: 100%;
@@ -31,7 +32,7 @@
       ul,li {
         list-style: none;
       }
-        .legend {
+      .legend {
             position: absolute;
             right: 20px;
             bottom: 20px;
@@ -72,49 +73,32 @@
     <ul class="labels" id="legend-label"></ul>
 </div>
 <div id="msgMarker"></div>
+<script src="./../js/config.js"></script>
 <script src="https://webapi.amap.com/loca?v=1.2.1&key=becb1346c6f163e630a753743cc98aba"></script>
 <script src="https://a.amap.com/Loca/static/dist/jquery.min.js"></script>
 <script>
     let cityName = location.href.split('=')[1]
-    let cities = {
-        bj: {
-            center: [116.407394, 39.904211],
-            name: '北京',
-        },
-        sh: {
-            center: [121.473662, 31.230372],
-            name: '上海'
-        },
-        sz: {
-            center: [114.085947,22.547],
-            name: '深圳'
-        }
-    }
-    // var city = {
-    //     center: [116.407394, 39.904211],
-    //     name: '北京'
-    // }
-    var city = cities[cityName]
-
+    var city = cityList[cityName]
     $('#city').text(city.name)
+
     var color = [
-        'rgb(112,78,229)',
-        'rgb(86,163,233)',
-        'rgb(70,229,235)',
-        'rgb(108,235,104)',
-        'rgb(245,241,72)',
-        'rgb(241,193,72)',
-        'rgb(243,74,70)'
+        'rgb(250,224,185)',
+        'rgb(246,198,160)',
+        'rgb(240,168,135)',
+        'rgb(235,140,112)',
+        'rgb(229,110,87)',
+        'rgb(223,74,60)',
+        'rgb(214,20,20)',
     ]
 
-    $.get(`./${cityName}/count_location_${cityName}.json`, function (heatmapData) {
+    $.get(`./../data/location/count_location_${city.abbr}.json`, function (heatmapData) {
         var map = Loca.create('container', {
             mapStyle: 'amap://styles/dce33b01f4a1fc79a1994f81dc145941',
-            pitch: 50,
+            // pitch: 50,
             zoom: 9,
-            // viewMode: '2D',  //设置地图模式
+            viewMode: '2D',  //设置地图模式
             center: city.center,
-            zooms: [4, 12]
+            // zooms: [4, 12]
         });
 
         var layer = Loca.visualLayer({
@@ -123,7 +107,7 @@
             type: 'heatmap',
             shape: 'rectangle'
         });
-        // console.log(heatmapData)
+
         layer.setData(heatmapData, {
             lnglat: 'lnglat',
             value: 'comment'
@@ -137,12 +121,12 @@
                 opacity: 1
             }
         });
+
         layer.on('click', function (ev) {
             updateInfo(ev);
         });
 
         function updateInfo(ev) {
-            // console.log(ev)
             $('#msgMarker').text((() => {
                 let str = ''
                 let list = ev.rawData
@@ -166,8 +150,8 @@
         });
 
         layer.render();
-    });
 
+    })
     function initLegend(colorLegend) {
         var legends = colorLegend.map(item => {
             // color 为 gradient 传入的格式

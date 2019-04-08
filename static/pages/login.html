@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" href="./../css/common.css" />
+  <title>中国城市商圈热力图</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    #login_box {
+      height: 100%;
+      width: 100%;
+      background-image: url(./../img/login_bg.png);
+      background-repeat: no-repeat;
+      background-position: right center;
+      background-size: content-box;
+    }
+    .login {
+      position: absolute;
+      top: 50%;
+      left: 133px;
+      transform: translateY(-50%);
+    }
+    .title {
+      font-size: 46px;
+      color: #505050;
+      letter-spacing: 0.4px;
+      margin-bottom: 50px;
+      font-family: PingFang-SC-Bold;
+    }
+    .login_input {
+      border: none;
+      background: #EDEDED;
+      border-radius: 46px;
+      width: 260px;
+      height: 48px;
+      outline: none;
+      padding: 0 20px;
+      margin-bottom: 30px;
+    }
+    .login_button{
+      background-image: linear-gradient(90deg, #6B8CF5 0%, #5B61F1 100%);
+      border-radius: 46px;
+      border: none;
+      outline: none;
+      width: 160px;
+      height: 48px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="login_box">
+    <div class="login">
+      <h1 class="title">中国城市商圈热力图</h1>
+        <p>
+          <input class="login_input" id="username" placeholder="输入账号"/>
+        </p>
+        <p>
+          <input class="login_input" type="password" id="password" placeholder="输入密码"/>
+        </p>
+      <button class="login_button" id="submit" onclick="onLogin()">登录</button>
+    </div>
+  </div>
+</body>
+</html>
+<script src="./../js/config.js"></script>
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js"></script>
+<script>
+  sessionStorage.removeItem('loginCity')
+  function onLogin () {
+    let username = document.querySelector('#username').value
+    let password = document.querySelector('#password').value
+    let flag = 0
+    for (let key in cityList) {
+      if (username === key) {
+        if (md5(password) === cityList[key].pswd) {
+          flag = 1
+          sessionStorage.loginCity = key
+          location.href="./../../index.html"
+        } else {
+          flag = 2
+        }
+      }
+    }
+    switch (flag) {
+      case 0: 
+        alert('用户名输入错误')
+        break
+      case 1:
+        // console.log('都对')
+        break
+      case 2:
+        alert('密码输入错误')
+        break
+      default: 
+        alert('输入有误')
+    }
+  }
+</script>

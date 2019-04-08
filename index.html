@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" href="./static/css/common.css" />
   <title>Document</title>
   <style>
-    html,body,div,a {
-      padding: 0;
-      margin: 0;
-    }
     a {
       text-decoration: none;
-      padding: 5px;
+      padding: 5px 10px;
+      font-family: PingFangSC-Medium;
+      font-size: 20px;
+      color: #636363;
     }
     a:link{
       color: #050505;
@@ -21,7 +21,10 @@
       color: #050505;
     }
     a:hover {
-      color: red;
+      border-radius: 20px;
+      background-image: linear-gradient(90deg, #6B8CF5 0%, #5B61F1 100%);
+      border-radius: 46px;
+      color: white;
     }
     a:active {
       color: pink;
@@ -34,24 +37,30 @@
 </head>
 <body>
   <div class="contain">
-    <p>
-      <a href="./hot2D.html?city=bj">北京市商圈2D热力图</a>
-      <a href="./hot3D.html?city=bj">北京市商圈3D热力图</a>
-      <a href="./point.html?city=bj">北京市商圈散点图</a>
-      <a href="./download/commercial_area_bj.csv">下载北京市商圈</a>
-    </p>
-    <p>
-      <a href="./hot2D.html?city=sh">上海市商圈2D热力图</a>
-      <a href="./hot3D.html?city=sh">上海市商圈3D热力图</a>
-      <a href="./point.html?city=sh">上海市商圈散点图</a>
-      <a href="./download/commercial_area_sh.csv">下载上海市商圈</a>
-    </p>
-    <p>
-      <a href="./hot2D.html?city=sz">深圳市商圈2D热力图</a>
-      <a href="./hot3D.html?city=sz">深圳市商圈3D热力图</a>
-      <a href="./point.html?city=sz">深圳市商圈散点图</a>
-      <a href="./download/commercial_area_sz.csv">下载深圳市商圈</a>
-    </p>
   </div>
 </body>
 </html>
+<script src="./static/js/config.js"></script>
+<script>
+  let contain = document.querySelector('.contain')
+  let title = document.querySelector('title')
+  let loginCity = sessionStorage.loginCity
+  if (!loginCity) {
+    location.href = "./static/pages/login.html"
+  }
+  
+  let city = cityList[loginCity]
+  if (city) {
+    title.innerText = city.name
+      contain.innerHTML = `
+      <p>
+        <a href="./static/pages/hot2D.html?city=${city.fullName}">${city.name}市商圈2D热力图</a>
+        <a href="./static/pages/hot3D.html?city=${city.fullName}">${city.name}市商圈3D热力图</a>
+        <a href="./static/pages/point.html?city=${city.fullName}">${city.name}市商圈散点图</a>
+        <a href="./static/data/download/commercial_area_${city.abbr}.csv">下载${city.name}市商圈</a>
+      </p>
+      `
+  } else {
+    contain.innerHTML = `还未录入该城市数据`
+  }
+</script>
